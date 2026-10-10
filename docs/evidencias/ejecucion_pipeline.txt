@@ -1,0 +1,6 @@
+2026-10-10 16:13:00,140 INFO Escritura completada: hdfs://localhost:9000/proyecto_emergencias/reproduccion_pipeline_prueba_01/processed/emergencias_nacional
+2026-10-10 16:13:04,173 INFO Escritura completada: hdfs://localhost:9000/proyecto_emergencias/reproduccion_pipeline_prueba_01/processed/emergencias_la_libertad
+2026-10-10 16:13:13,708 INFO Escritura completada: hdfs://localhost:9000/proyecto_emergencias/reproduccion_pipeline_prueba_01/processed/emergencias_integradas
+2026-10-10 16:13:25,224 INFO Escritura completada: hdfs://localhost:9000/proyecto_emergencias/reproduccion_pipeline_prueba_01/processed/dataset_maestro_2003_2025
+2026-10-10 16:13:32,508 INFO Escritura completada: hdfs://localhost:9000/proyecto_emergencias/reproduccion_pipeline_prueba_01/processed/panel_distrito_mes_2003_2025
+2026-10-10 16:13:32,508 INFO PIPELINE OK: RAW -> PROCESSED. Salida: hdfs://localhost:9000/proyecto_emergencias/reproduccion_pipeline_prueba_01

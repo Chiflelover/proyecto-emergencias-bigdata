@@ -1,0 +1,15 @@
+Verificación de resultados con PySpark sobre YARN
+Fecha: 10/10/2026
+
+Ruta HDFS:
+/proyecto_emergencias/reproduccion_pipeline_prueba_01/processed
+
+Conteos obtenidos mediante spark.read.parquet(...).count():
+
+emergencias_nacional: 142139
+emergencias_la_libertad: 2853
+emergencias_integradas: 2853
+dataset_maestro_2003_2025: 2853
+panel_distrito_mes_2003_2025: 23184
+
+Los cinco conteos coinciden con los resultados esperados.
