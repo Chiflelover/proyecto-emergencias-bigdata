@@ -1,0 +1,23 @@
+# Datos originales, derivados y pruebas voluminosas
+/data/raw/
+/data/processed/
+/data/analytics/
+*.csv
+*.geojson
+*.pdf
+*.parquet
+*.zip
+*.log
+# Notebook checkpoints, virtualenv y caches
+.ipynb_checkpoints/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+bigdata_env/
+.env
+.env.*
+# Configuración local y credenciales
+*.key
+*.pem
+secrets.*
