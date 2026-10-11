@@ -48,6 +48,17 @@ y [Spark 3.5.1](https://spark.apache.org/docs/3.5.1/).
 El archivo `requirements.txt` documenta las dependencias Python del notebook;
 no sustituye la instalación del clúster Spark/Hadoop.
 
+Para instalar las dependencias Python, desde el repositorio:
+
+    python3 -m venv .venv
+    source .venv/bin/activate
+    python -m pip install -r requirements.txt
+    export PYSPARK_PYTHON="$(command -v python)"
+
+En Debian puede ser necesario instalar previamente `python3-venv`.
+Mantener este entorno activado al ejecutar `./run_pipeline.sh`.
+
+
 ## Descargar los datos preparados
 
 El paquete de entrada está disponible públicamente:
@@ -66,7 +77,7 @@ en HDFS antes de ejecutar el pipeline.
 ## Prepara los datos
 
 Consulta [data/README.md](data/README.md) para los enlaces y los archivos de entrada.
-Antes de ejecutar, comprueba las rutas:
+Con Hadoop y YARN iniciados (`start-all.sh`), comprueba las rutas:
 
 ```bash
 hdfs dfs -ls /proyecto_emergencias/raw/sinpad
@@ -121,4 +132,4 @@ que ejecuta los tres scripts de `src/`.
 Guarda capturas de las verificaciones HDFS, log de ejecución (sin datos sensibles),
 conteos de salida y pruebas de rendimiento en `docs/evidencias/`.
 Este es un entorno académico de **un solo nodo**, sin alta disponibilidad.
-COEN, CHIRPS e INEI requieren preparación previa y no tienen descarga automatizada.
+Los datos preparados están disponibles en GitHub Releases. Reconstruirlos desde las fuentes originales requiere preparación adicional.
