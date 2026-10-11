@@ -21,3 +21,4 @@ bigdata_env/
 *.key
 *.pem
 secrets.*
+/resultados/

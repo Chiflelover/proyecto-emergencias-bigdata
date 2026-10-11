@@ -14,18 +14,21 @@ repositorio **no es un producto ni una publicación oficial de INDECI**.
 
 ## Qué está automatizado
 
-`src/pipeline_emergencias.py` ejecuta la sección verificable del flujo **RAW → PROCESSED**
-que se encontraba distribuida en el notebook original:
+El archivo `run_pipeline.sh` ejecuta tres etapas:
 
-1. Limpia SINPAD histórico (normaliza nombres, interpreta formatos de fecha y valida calidad).
-2. Filtra La Libertad y enlaza COEN por código SINPAD (LEFT JOIN).
-3. Integra CHIRPS por provincia/distrito/año/mes e INEI por provincia/distrito/año.
-4. Genera el dataset maestro y el panel distrito-mes (incluyendo meses sin emergencias).
-5. Valida cantidades y guarda resultados en Parquet.
+1. Procesamiento RAW → PROCESSED con Spark y Parquet en HDFS.
+2. Entrenamiento y evaluación del modelo base de Regresión Logística.
+3. Generación de cuatro gráficos del análisis exploratorio (EDA).
 
-Este script **no automatiza todavía** la adquisición externa de los datasets, la
-extracción de los PDFs COEN, la preparación de CHIRPS/INEI, el modelo predictivo ni
-la generación de gráficos. El notebook contiene estas exploraciones y experimentos.
+Los scripts utilizados son:
+
+- `src/pipeline_emergencias.py`
+- `src/modelo_base.py`
+- `src/eda_emergencias.py`
+
+La descarga y preparación de los datasets se realiza previamente,
+siguiendo las instrucciones de este README y `data/README.md`.
+
 
 ## Preparación del entorno
 
@@ -59,45 +62,36 @@ hdfs dfs -ls /proyecto_emergencias/raw/chirps/historico
 
 ## Ejecución en Debian
 
-En una máquina que **ya tenga Hadoop, YARN y Spark instalados y configurados**:
+Después de instalar y configurar Hadoop, YARN, Spark, Python y
+los datasets indicados en `data/README.md`, iniciar los servicios:
 
-```bash
-start-all.sh
-jps
-spark-submit --master yarn --deploy-mode client \
-  src/pipeline_emergencias.py \
-  --output-base hdfs://localhost:9000/proyecto_emergencias/reproduccion_pipeline
-```
+    start-all.sh
+    jps
 
-El script **no sobrescribe** las salidas existentes ni lee los resultados procesados
-como entrada: únicamente lee archivos RAW. Si la carpeta de reproducción ya existe,
-la escritura falla para proteger los resultados anteriores. Para repetir, usa un
-**nuevo** nombre de `--output-base`, por ejemplo `reproduccion_pipeline_v2`.
+Desde la carpeta del repositorio, ejecutar:
 
-Salida esperada:
+    chmod +x run_pipeline.sh
+    ./run_pipeline.sh
 
-```text
-.../reproduccion_pipeline/processed/emergencias_nacional
-.../reproduccion_pipeline/processed/emergencias_la_libertad
-.../reproduccion_pipeline/processed/emergencias_integradas
-.../reproduccion_pipeline/processed/dataset_maestro_2003_2025
-.../reproduccion_pipeline/processed/panel_distrito_mes_2003_2025
-```
+El comando procesa los datos, entrena el modelo base y genera
+automáticamente los cuatro gráficos, sin abrir JupyterLab.
 
-Comprobación:
+Los resultados se guardan en:
 
-```bash
-hdfs dfs -ls /proyecto_emergencias/reproduccion_pipeline/processed
-```
+- HDFS: `/proyecto_emergencias/ejecucion_YYYYMMDD_HHMMSS/processed/`
+- Gráficos: `resultados/ejecucion_YYYYMMDD_HHMMSS/`
+- Logs: `~/pipeline_logs/`
 
-Conteos esperados **para el corte utilizado en el informe**: SINPAD nacional 142139,
-La Libertad 2853, CHIRPS histórico 23184, dataset maestro 2853 y panel distrito-mes
-23184. El script se detiene si estos conteos no coinciden, para no generar salidas
-que aparenten corresponder al corte original.
+El modelo imprime su matriz de confusión y métricas en la terminal
+y en el log correspondiente.
 
-La ejecución debería mostrar `PIPELINE OK: RAW -> PROCESSED`, pero esta versión
-**aún no se ha probado con datos HDFS reales en este entorno de entrega**; debe
-validarse en la VM del equipo antes de afirmar reproducibilidad completa.
+La ejecución completa fue probada exitosamente en la VM Debian 12
+del equipo. Para reproducirla en otra máquina se requiere la misma
+estructura de datos y un entorno compatible.
+
+El pipeline valida conteos del dataset histórico original. No está
+preparado todavía para procesar automáticamente cortes actualizados.
+
 
 ## Notebook
 
