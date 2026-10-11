@@ -48,6 +48,21 @@ y [Spark 3.5.1](https://spark.apache.org/docs/3.5.1/).
 El archivo `requirements.txt` documenta las dependencias Python del notebook;
 no sustituye la instalación del clúster Spark/Hadoop.
 
+## Descargar los datos preparados
+
+El paquete de entrada está disponible públicamente:
+
+[Descargar datos de entrada (GitHub Releases)](https://github.com/Chiflelover/proyecto-emergencias-bigdata/releases/tag/v1.0-s7)
+
+Descarga `datos_entrada_emergencias.tar.gz` desde la sección
+**Assets** del Release.
+
+El paquete contiene los archivos SINPAD, COEN, INEI,
+CHIRPS y GeoSINPAD 2026 utilizados en el proyecto.
+
+Sigue las instrucciones de `data/README.md` para cargarlo
+en HDFS antes de ejecutar el pipeline.
+
 ## Prepara los datos
 
 Consulta [data/README.md](data/README.md) para los enlaces y los archivos de entrada.
@@ -98,8 +113,8 @@ preparado todavía para procesar automáticamente cortes actualizados.
 `notebooks/Proyecto_Emergencias_BigData.ipynb` es el cuaderno exploratorio original
 (con salidas borradas en la copia para GitHub). No es un flujo lineal: contiene
 reintentos, pruebas, modelos y análisis que dependen de los Parquet que se generaron
-en distintas sesiones. El script de `src/` es la ruta de reproducción del pipeline
-básico.
+en distintas sesiones. La reproducción automatizada se realiza con `./run_pipeline.sh`,
+que ejecuta los tres scripts de `src/`.
 
 ## Evidencias y limitaciones
 

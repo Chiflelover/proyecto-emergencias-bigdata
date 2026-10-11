@@ -64,5 +64,26 @@ Estos comandos están pensados para una instalación nueva.
 No sobrescribirán carpetas RAW existentes.
 
 El paquete no está incluido actualmente en el repositorio.
-Su distribución está pendiente de verificar las condiciones
-de las fuentes originales.
+Se distribuye mediante GitHub Releases. Revisar las condiciones
+de reutilización y atribución de las fuentes originales.
+
+## Licencias y redistribución
+
+- SINPAD: existen conjuntos oficiales con licencia
+  Open Data Commons Attribution. Confirmar correspondencia
+  con el CSV histórico utilizado.
+- CHIRPS v3: datos abiertos del Climate Hazards Center,
+  con atribución a la fuente original.
+- COEN, INEI y GeoSINPAD: verificar las condiciones
+  aplicables a los archivos utilizados y derivados.
+
+El paquete `datos_entrada_emergencias.tar.gz` fue probado
+en la VM, y está disponible para descarga pública en GitHub Releases.
+
+La publicación no sustituye la verificación pendiente de
+las condiciones de redistribución de COEN, INEI y GeoSINPAD.
+
+
+## Descargar el paquete
+
+[GitHub Releases v1.0-s7](https://github.com/Chiflelover/proyecto-emergencias-bigdata/releases/tag/v1.0-s7)
