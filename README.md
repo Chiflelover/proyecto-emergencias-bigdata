@@ -182,3 +182,46 @@ completamente ciega.
 Los resultados son experimentales y no demuestran que el
 modelo este listo para uso operativo en INDECI.
 
+
+## 3.7. Prueba de escalabilidad nacional
+
+Se realizaron benchmarks utilizando los 142139 registros
+nacionales de SINPAD como conjunto base.
+
+Se evaluaron tres escalas:
+
+- 1x: 142139 registros.
+- 10x: 1421390 registros.
+- 100x: 14213900 registros.
+
+Las pruebas utilizaron Spark sobre YARN con un ejecutor
+de 1 GB de memoria y 2 nucleos.
+
+### Reproducir el benchmark
+
+El dataset nacional debe estar disponible en HDFS.
+
+Ejemplo para la escala 1x:
+
+    spark-submit --master yarn --deploy-mode client \
+      --num-executors 1 --executor-cores 2 \
+      --executor-memory 1g --driver-memory 1g \
+      src/benchmark_nacional.py --factor 1
+
+Para las demas escalas utilizar --factor 10 o --factor 100.
+
+### Evidencias
+
+Los resultados, graficos y notebook se encuentran en:
+
+- docs/evidencias/escalabilidad/
+- notebooks/Analisis_Escalabilidad_SINPAD.ipynb
+
+### Limitaciones
+
+Se utilizaron seis columnas y replicas sinteticas.
+Las pruebas se realizaron en una VM de un solo nodo.
+Los tiempos pueden estar afectados por cache y calentamiento.
+Los resultados no demuestran escalabilidad horizontal
+ni representan el rendimiento del pipeline completo.
+

@@ -1,0 +1,44 @@
+BENCHMARK NACIONAL SINPAD
+Motor: Apache Spark sobre YARN
+Infraestructura: Debian 12, un nodo
+Ejecutor: 1 GB RAM, 2 cores
+Driver: 1 GB RAM
+Columnas utilizadas: 6
+
+========== ESCALA 1X ==========
+Registros verificados: 142139
+Tiempo preparacion: 4.36
+Ejecucion 1: 1.895 segundos
+Ejecucion 2: 0.913 segundos
+Ejecucion 3: 0.606 segundos
+Mediana: 0.913
+Tamaño fisico en HDFS:
+1.1 M  1.1 M  /proyecto_emergencias/benchmark/nacional_1x/entrada
+
+========== ESCALA 10X ==========
+Registros verificados: 1421390
+Tiempo preparacion: 6.965
+Ejecucion 1: 1.986 segundos
+Ejecucion 2: 0.999 segundos
+Ejecucion 3: 0.869 segundos
+Mediana: 0.999
+Tamaño fisico en HDFS:
+11.4 M  11.4 M  /proyecto_emergencias/benchmark/nacional_10x/entrada
+
+========== ESCALA 100X ==========
+Registros verificados: 14213900
+Tiempo preparacion: 27.977
+Ejecucion 1: 3.561 segundos
+Ejecucion 2: 2.746 segundos
+Ejecucion 3: 2.158 segundos
+Mediana: 2.746
+Tamaño fisico en HDFS:
+117.6 M  117.6 M  /proyecto_emergencias/benchmark/nacional_100x/entrada
+
+LIMITACIONES:
+- Datos ampliados mediante replicas sinteticas.
+- Procesamiento de seis columnas.
+- Ejecucion en un solo nodo.
+- Tres repeticiones por escala.
+- Los tiempos pueden estar influidos por cache.
+- No demuestra escalabilidad horizontal.
