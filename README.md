@@ -225,3 +225,43 @@ Los tiempos pueden estar afectados por cache y calentamiento.
 Los resultados no demuestran escalabilidad horizontal
 ni representan el rendimiento del pipeline completo.
 
+
+## 1.4. Linea base experimental del negocio
+
+Se evaluo la priorizacion de los 84 distritos de
+La Libertad mediante dos estrategias:
+
+- Ranking historico: emergencias del mismo mes del año anterior.
+- Ranking predictivo: regresion logistica ponderada con Spark ML.
+
+Ambas estrategias seleccionan 20 distritos por mes.
+
+### Resultados Top 20
+
+| Año | Historico | Modelo IA |
+|-----|-----------|-----------|
+| 2024 | 53 | 73 |
+| 2025 | 93 | 109 |
+
+Los valores corresponden a distrito-mes con emergencia
+identificados dentro del ranking mensual.
+
+### Indicador
+
+Recall@20: proporcion de casos positivos identificados
+al priorizar los 20 distritos con mayor puntuacion cada mes.
+
+### Evidencias
+
+- docs/linea_base_negocio.md
+- docs/evidencias/linea_base/comparacion_top20_2024_2025.png
+- notebooks/Analisis_Escalabilidad_SINPAD.ipynb
+
+### Limitaciones
+
+La referencia historica es experimental y no representa
+el procedimiento oficial de INDECI.
+
+No se midieron tiempos reales de priorizacion institucional.
+La evaluacion de 2025 no fue completamente ciega.
+
