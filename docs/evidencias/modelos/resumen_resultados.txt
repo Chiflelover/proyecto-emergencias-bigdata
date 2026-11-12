@@ -1,0 +1,159 @@
+
+========== modelo_base_original.log ==========
+=== MATRIZ DE CONFUSIÓN ===
+TP: 3
+FN: 296
+FP: 0
+TN: 709
+=== MÉTRICAS MODELO BASE ===
+Accuracy : 0.7063
+Precision: 1.0
+Recall   : 0.01
+F1       : 0.0199
+F2       : 0.0125
+PR-AUC   : 0.6028
+
+========== validacion_inicial.log ==========
+=== MATRIZ DE CONFUSIÓN ===
+TP: 2
+FN: 168
+FP: 0
+TN: 838
+=== MÉTRICAS MODELO BASE ===
+Accuracy : 0.8333
+Precision: 1.0
+Recall   : 0.0118
+F1       : 0.0233
+F2       : 0.0147
+PR-AUC   : 0.2598
+=== MODELO DE REFERENCIA INGENUO ===
+Total: 1008
+TP: 0
+FN: 170
+FP: 0
+TN: 838
+=== METRICAS REFERENCIA ===
+Accuracy : 0.8313
+Precision: 0.0
+Recall   : 0.0
+F1       : 0.0
+F2       : 0.0
+=== COMPARACION ===
+Accuracy original: 0.8333
+Accuracy ingenua : 0.8313
+Diferencia      : 0.002
+
+========== modelo_ponderado.log ==========
+Peso positivo: 17.38
+=== MATRIZ DE CONFUSIÓN ===
+TP: 102
+FN: 68
+FP: 329
+TN: 509
+=== MÉTRICAS MODELO PONDERADO ===
+Accuracy : 0.6062
+Precision: 0.2367
+Recall   : 0.6
+F1       : 0.3394
+F2       : 0.459
+PR-AUC   : 0.2788
+=== MODELO DE REFERENCIA INGENUO ===
+Total: 1008
+TP: 0
+FN: 170
+FP: 0
+TN: 838
+=== METRICAS REFERENCIA ===
+Accuracy : 0.8313
+Precision: 0.0
+Recall   : 0.0
+F1       : 0.0
+F2       : 0.0
+=== COMPARACION ===
+Accuracy original: 0.6062
+Accuracy ingenua : 0.8313
+Diferencia      : -0.2252
+
+========== comparacion_ranking_historico.log ==========
+Peso positivo: 17.38
+=== MATRIZ DE CONFUSIÓN ===
+TP: 102
+FN: 68
+FP: 329
+TN: 509
+=== MÉTRICAS MODELO PONDERADO ===
+Accuracy : 0.6062
+Precision: 0.2367
+Recall   : 0.6
+F1       : 0.3394
+F2       : 0.459
+PR-AUC   : 0.2788
+=== MODELO DE REFERENCIA INGENUO ===
+Total: 1008
+TP: 0
+FN: 170
+FP: 0
+TN: 838
+=== METRICAS REFERENCIA ===
+Accuracy : 0.8313
+Precision: 0.0
+Recall   : 0.0
+F1       : 0.0
+F2       : 0.0
+=== COMPARACION ===
+Accuracy original: 0.6062
+Accuracy ingenua : 0.8313
+Diferencia      : -0.2252
+=== COMPARACION DE UMBRALES ===
+=== RANKING MENSUAL DE DISTRITOS ===
+Top K | Alertas | TP | FP | Precision | Recall
+5 | 60 | 28 | 32 | 0.4667 | 0.1647
+10 | 120 | 44 | 76 | 0.3667 | 0.2588
+20 | 240 | 73 | 167 | 0.3042 | 0.4294
+=== RANKING HISTORICO ===
+Top K | Alertas | TP | FP | Precision | Recall
+5 | 60 | 23 | 37 | 0.3833 | 0.1353
+10 | 120 | 40 | 80 | 0.3333 | 0.2353
+20 | 240 | 53 | 187 | 0.2208 | 0.3118
+
+========== evaluacion_final_2025.log ==========
+Peso positivo: 15.6337
+=== MATRIZ DE CONFUSIÓN ===
+TP: 203
+FN: 96
+FP: 206
+TN: 503
+=== MÉTRICAS MODELO PONDERADO ===
+Accuracy : 0.7004
+Precision: 0.4963
+Recall   : 0.6789
+F1       : 0.5734
+F2       : 0.6324
+PR-AUC   : 0.5835
+=== MODELO DE REFERENCIA INGENUO ===
+Total: 1008
+TP: 0
+FN: 299
+FP: 0
+TN: 709
+=== METRICAS REFERENCIA ===
+Accuracy : 0.7034
+Precision: 0.0
+Recall   : 0.0
+F1       : 0.0
+F2       : 0.0
+=== COMPARACION ===
+Accuracy ponderada: 0.7004
+Accuracy ingenua : 0.7034
+Diferencia      : -0.003
+=== COMPARACION DE UMBRALES ===
+=== RANKING MENSUAL DE DISTRITOS ===
+Top K | Alertas | TP | FP | Precision | Recall
+5 | 60 | 36 | 24 | 0.6000 | 0.1204
+10 | 120 | 64 | 56 | 0.5333 | 0.2140
+20 | 240 | 109 | 131 | 0.4542 | 0.3645
+=== RANKING HISTORICO ===
+Top K | Alertas | TP | FP | Precision | Recall
+5 | 60 | 32 | 28 | 0.5333 | 0.1070
+10 | 120 | 52 | 68 | 0.4333 | 0.1739
+20 | 240 | 93 | 147 | 0.3875 | 0.3110

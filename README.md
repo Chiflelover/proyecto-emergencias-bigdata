@@ -133,3 +133,52 @@ Guarda capturas de las verificaciones HDFS, log de ejecución (sin datos sensibl
 conteos de salida y pruebas de rendimiento en `docs/evidencias/`.
 Este es un entorno académico de **un solo nodo**, sin alta disponibilidad.
 Los datos preparados están disponibles en GitHub Releases. Reconstruirlos desde las fuentes originales requiere preparación adicional.
+
+## 4.3. Evaluacion del modelo predictivo mejorado
+
+Se implemento una regresion logistica ponderada con Spark ML
+para mejorar la deteccion de emergencias en La Libertad.
+
+### Separacion temporal
+
+- Entrenamiento inicial: caracteristicas de 2004 a 2022.
+- Validacion: caracteristicas de 2023, objetivo 2024.
+- Entrenamiento final: caracteristicas de 2004 a 2023.
+- Evaluacion final: caracteristicas de 2024, objetivo 2025.
+- Horizonte predictivo: 12 meses.
+
+### Reproduccion de los experimentos
+
+Requiere HDFS y YARN activos y el panel Parquet procesado.
+
+Comparacion de rankings en validacion 2024:
+
+    spark-submit --master yarn --deploy-mode client \
+      src/comparacion_ranking_historico.py \
+      --panel-path /proyecto_emergencias/processed/panel_distrito_mes_2003_2025
+
+Evaluacion temporal de 2025:
+
+    spark-submit --master yarn --deploy-mode client \
+      src/evaluacion_final_2025.py \
+      --panel-path /proyecto_emergencias/processed/panel_distrito_mes_2003_2025
+
+### Resultados y evidencias
+
+- docs/evidencias/modelos/resumen_resultados.txt
+- docs/evidencias/modelos/umbrales_validacion_2024.txt
+
+Se compararon la regresion logistica original, la ponderada,
+un clasificador ingenuo y un ranking historico.
+
+Tambien se evaluaron rankings Top 5, Top 10 y Top 20.
+
+### Limitaciones
+
+Los datos de 2025 ya habian sido examinados durante el
+desarrollo original. Por tanto, no constituyen una prueba
+completamente ciega.
+
+Los resultados son experimentales y no demuestran que el
+modelo este listo para uso operativo en INDECI.
+
