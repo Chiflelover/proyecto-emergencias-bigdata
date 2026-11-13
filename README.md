@@ -1,5 +1,82 @@
 # Análisis y priorización de emergencias en La Libertad — Big Data
 
+## Versión definitiva: V3-A
+
+El sistema predictivo definitivo utiliza una regresión logística ponderada
+implementada con Apache Spark MLlib.
+
+### Objetivo
+
+Predecir si ocurrirá al menos una emergencia durante el mes siguiente
+en cada uno de los 84 distritos de La Libertad.
+
+### Datos utilizados
+
+- SINPAD: emergencias, afectados y daños.
+- CHIRPS: precipitaciones y sus acumulados históricos.
+- INEI: población distrital, presentada en el dashboard.
+- COEN: documentos PDF utilizados en el procesamiento y análisis Big Data.
+
+El panel histórico comprende 2003-2025. También se integraron datos
+provisionales de enero a junio de 2026, sujetos a controles de calidad.
+
+### Modelo V3-A
+
+- Algoritmo: regresión logística ponderada.
+- Variables predictoras: 19.
+- Horizonte: 1 mes.
+- Validación temporal: objetivos de 2024.
+- Evaluación final: objetivos de 2025.
+- Salida: puntuación predictiva y ranking de 84 distritos.
+- Las puntuaciones no deben interpretarse como probabilidades calibradas.
+
+Notebook principal:
+`notebooks/Proyecto_Emergencias_V3A_Final.ipynb`
+
+### Resultados de evaluación retrospectiva
+
+| Mes de 2025 | Recall@20 V3-A | Recall@20 histórico |
+|---|---:|---:|
+| Octubre | 43.75 % | 43.75 % |
+| Noviembre | 57.14 % | 35.71 % |
+| Diciembre | 71.43 % | 50.00 % |
+
+Archivos: `data/evaluaciones_2025/`.
+
+### Dashboard Streamlit
+
+Código: `dashboard_v3/`.
+
+Incluye visualización de predicciones, rankings distritales,
+calidad de datos SINPAD 2026 y población distrital INEI 2025.
+
+La clasificación de prioridad poblacional es descriptiva y
+no modifica las predicciones del modelo V3-A.
+
+Para instalar las dependencias Python:
+
+    pip install -r requirements.txt
+
+Para ejecutar el dashboard desde su directorio:
+
+    cd dashboard_v3
+    streamlit run app.py --server.port 8502
+
+La generación de predicciones requiere Spark, HDFS, el modelo
+entrenado y los datos procesados correspondientes.
+
+Los datos SINPAD 2026 son provisionales y no se utilizan como
+evaluación definitiva del modelo.
+
+### Versiones anteriores
+
+El pipeline base (`run_pipeline.sh`) y los experimentos con horizonte
+de 12 meses descritos más abajo corresponden a etapas anteriores.
+No representan el modelo predictivo definitivo V3-A.
+
+---
+
+
 Proyecto académico (UPAO) de apoyo a la gestión del riesgo de desastres con datos de
 INDECI/SINPAD, COEN, CHIRPS e INEI. El procesamiento se realiza con Spark sobre YARN
 y almacena salidas Parquet en HDFS. La organización de referencia es INDECI; este

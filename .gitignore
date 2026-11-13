@@ -22,3 +22,14 @@ bigdata_env/
 *.pem
 secrets.*
 /resultados/
+
+# Resultados reproducibles del modelo V3-A
+!/data/evaluaciones_2025/prediccion_*.csv
+
+# Población distrital INEI
+!/data/inei/
+!/data/inei/inei_la_libertad_poblacion_distrital_2021_2025.csv
+
+# Resumen de calidad SINPAD 2026
+!/data/calidad_2026/
+!/data/calidad_2026/calidad_sinpad_2026.csv
