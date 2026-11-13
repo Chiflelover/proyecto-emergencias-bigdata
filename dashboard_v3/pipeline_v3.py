@@ -81,7 +81,7 @@ def construir_variables_v3(panel):
     return df
 
 
-def validar_periodo_v3(panel, anio, mes):
+def validar_periodo_v3(panel, anio, mes, modo_exploratorio=False):
     """Verifica la cobertura mensual necesaria para predecir."""
 
     if not 1 <= mes <= 12:
@@ -138,7 +138,7 @@ def validar_periodo_v3(panel, anio, mes):
 
     # Verificar cobertura oficial para datos de 2026 en adelante.
     # No basta con tener 84 distritos y variables numéricas.
-    if anio >= 2026:
+    if anio >= 2026 and not modo_exploratorio:
 
         if "sinpad_cobertura_validada" not in datos.columns:
             print(
@@ -190,16 +190,35 @@ def validar_periodo_v3(panel, anio, mes):
 
     condicion_nulos = F.lit(False)
 
+    campos_impacto = {
+        "afectados_mes",
+        "damnificados_mes",
+        "fallecidos_mes",
+        "viviendas_afectadas_mes",
+        "viviendas_destruidas_mes"
+    }
+
     for campo in campos_requeridos:
+        if (
+            modo_exploratorio
+            and anio == 2026
+            and campo in campos_impacto
+        ):
+            continue
+
         condicion_nulos = (
             condicion_nulos | F.col(campo).isNull()
         )
 
     nulos = datos.filter(condicion_nulos).count()
 
+    if modo_exploratorio:
+        cobertura_ok = 0 < distritos <= 84 and total == 13 * distritos
+    else:
+        cobertura_ok = total == 1092 and distritos == 84
+
     valido = (
-        total == 1092
-        and distritos == 84
+        cobertura_ok
         and incompletos == 0
         and duplicados == 0
         and nulos == 0
@@ -222,14 +241,106 @@ from pyspark.ml.classification import LogisticRegressionModel
 from pyspark.ml.functions import vector_to_array
 
 
-def predecir_mes_v3(panel, anio, mes):
+def predecir_mes_v3(panel, anio, mes, modo_exploratorio=False):
     """Genera el ranking V3-A del mes siguiente."""
 
-    # 1. Validar cobertura de datos
-    if not validar_periodo_v3(panel, anio, mes):
-        raise ValueError(
-            "No se puede predecir: periodo incompleto."
+    # 1. Validación del periodo
+    if modo_exploratorio:
+        fecha = F.make_date(
+            F.col("anio"), F.col("mes_num"), F.lit(1)
         )
+        corte = F.make_date(
+            F.lit(anio), F.lit(mes), F.lit(1)
+        )
+        inicio_periodo = F.add_months(corte, -12)
+
+        periodo = (
+            panel
+            .withColumn("_fecha", fecha)
+            .filter(F.col("_fecha").between(inicio_periodo, corte))
+        )
+
+        # Exigir 13 meses presentes y sin duplicados.
+        cobertura = (
+            periodo.groupBy("ubigeo")
+            .agg(
+                F.count("*").alias("_filas"),
+                F.countDistinct("_fecha").alias("_meses")
+            )
+            .filter(
+                (F.col("_filas") == 13)
+                & (F.col("_meses") == 13)
+            )
+            .select("ubigeo")
+        )
+
+        # Obtener las mismas 19 variables del modelo entrenado.
+        ensamblador = VectorAssembler.load(
+            "hdfs://localhost:9000/proyecto_emergencias/"
+            "models/assembler_v3_1mes_19vars"
+        )
+        variables = ensamblador.getInputCols()
+
+        calculadas = construir_variables_v3(periodo)
+        actuales = calculadas.filter(
+            (F.col("anio") == anio)
+            & (F.col("mes_num") == mes)
+        )
+
+        disponibles = F.lit(True)
+        for variable in variables:
+            disponibles = (
+                disponibles
+                & F.col(variable).isNotNull()
+                & ~F.isnan(F.col(variable).cast("double"))
+            )
+
+        elegibles = (
+            actuales
+            .filter(disponibles)
+            .join(cobertura, "ubigeo", "inner")
+            .select("ubigeo")
+            .distinct()
+        )
+
+        cantidad = elegibles.count()
+
+        print("===== VALIDACIÓN EXPLORATORIA =====")
+        print(f"Período de entrada: {anio}-{mes:02d}")
+        print(f"Distritos evaluables: {cantidad} / 84")
+
+        if cantidad == 0:
+            raise ValueError(
+                "No hay distritos con variables suficientes."
+            )
+
+        # Informar sobre lagunas históricas sin alterar los datos.
+        lagunas = (
+            periodo
+            .join(elegibles, "ubigeo", "inner")
+            .filter(F.col("_fecha") < corte)
+            .filter(
+                F.col("cantidad_emergencias_mes").isNull()
+                | F.col("damnificados_mes").isNull()
+            )
+            .count()
+        )
+
+        print(
+            "Registros históricos SINPAD incompletos "
+            f"entre los evaluables: {lagunas}"
+        )
+        print("Estado: EXPLORATORIO / SINPAD NO VALIDADO")
+
+        panel = panel.join(
+            elegibles, "ubigeo", "left_semi"
+        )
+
+    else:
+        if not validar_periodo_v3(panel, anio, mes):
+            raise ValueError(
+                "No se puede predecir: periodo incompleto."
+            )
 
     # 2. Recuperar componentes entrenados
     ruta = (
@@ -347,7 +458,7 @@ def predecir_mes_v3(panel, anio, mes):
         F.row_number().over(ventana)
     )
 
-    if ranking.count() != 84:
+    if ranking.count() != (cantidad if modo_exploratorio else 84):
         raise ValueError(
             "La prediccion no contiene 84 distritos."
         )

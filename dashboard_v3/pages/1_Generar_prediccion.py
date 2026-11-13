@@ -20,9 +20,8 @@ st.title("Generar predicción mensual")
 st.caption("Modelo V3-A | Región La Libertad")
 
 st.info(
-    "Modo de demostración histórica. "
-    "Por ahora se admiten meses de entrada de 2025, "
-    "cuya información ya fue validada."
+    "2025: demostración histórica. "
+    "2026: predicciones exploratorias con información SINPAD provisional."
 )
 
 meses = {
@@ -33,22 +32,52 @@ meses = {
     12: "Diciembre"
 }
 
-mes = st.selectbox(
-    "Mes de entrada",
-    options=list(meses),
-    index=11,
-    format_func=lambda m: f"{meses[m]} 2025"
+periodos = (
+    [(2025, m) for m in range(1, 13)]
+    + [(2026, m) for m in range(1, 13)]
 )
 
-objetivo = date(2026, 1, 1) if mes == 12 else date(2025, mes + 1, 1)
+anio, mes = st.selectbox(
+    "Mes de entrada",
+    options=periodos,
+    index=17,
+    format_func=lambda p: f"{meses[p[1]]} {p[0]}"
+)
+
+objetivo = (
+    date(anio + 1, 1, 1)
+    if mes == 12
+    else date(anio, mes + 1, 1)
+)
+
+if anio == 2026:
+    if mes <= 6:
+        st.warning(
+            "PREDICCIÓN EXPLORATORIA: SINPAD 2026 tiene "
+            "cobertura incompleta y datos de daños faltantes. "
+            "Los acumulados pueden subestimar impactos. "
+            "El resultado no es una predicción validada ni "
+            "debe utilizarse para decisiones operativas."
+        )
+        if mes == 6:
+            st.warning(
+                "Junio 2026: 9 distritos con reportes SINPAD "
+                "y 75 sin reportes disponibles."
+            )
+    else:
+        st.error(
+            "Este mes aún no tiene un panel SINPAD "
+            "integrado suficiente para generar una predicción."
+        )
 
 st.write(f"**Mes pronosticado:** {meses[objetivo.month]} {objetivo.year}")
-st.write("**Cobertura:** 84 distritos")
+st.write("**Ámbito regional:** 84 distritos")
 st.write("**Variables predictoras:** 19")
 
 if st.button(
     "Generar predicción",
-    type="primary"
+    type="primary",
+    disabled=(anio == 2026 and mes > 6)
 ):
     if not MOTOR.exists():
         st.error("No se encontró generar_prediccion.py")
@@ -75,8 +104,9 @@ if st.button(
                     [
                         sys.executable,
                         str(MOTOR),
-                        "2025",
-                        str(mes)
+                        str(anio),
+                        str(mes),
+                        *(["--exploratorio"] if anio == 2026 else [])
                     ],
                     cwd=str(CARPETA),
                     capture_output=True,
@@ -114,17 +144,144 @@ if st.button(
         dtype={"ubigeo": str}
     )
 
-    if len(df) != 84 or df["ubigeo"].nunique() != 84:
-        st.error("El archivo no contiene 84 distritos únicos.")
+    cantidad = len(df)
+
+    if (
+        cantidad == 0
+        or cantidad > 84
+        or df["ubigeo"].isna().any()
+        or df["ubigeo"].nunique() != cantidad
+        or (anio == 2025 and cantidad != 84)
+    ):
+        st.error("El archivo contiene una cobertura inválida.")
         st.stop()
+
+    if anio == 2026 and cantidad < 84:
+        st.warning(
+            f"Predicción exploratoria: {cantidad} de 84 distritos "
+            "tienen puntuación V3-A. Los demás no cuentan con "
+            "información suficiente."
+        )
 
     st.success(
         f"Predicción {periodo} generada correctamente."
     )
 
+    if anio == 2026:
+        ruta_lluvia = (
+            CARPETA / "comparaciones_sinpad_2026"
+            / f"comparacion_{anio}-{mes:02d}.csv"
+        )
+
+        if ruta_lluvia.exists():
+            base_lluvia = pd.read_csv(
+                ruta_lluvia, dtype={"ubigeo": str}
+            )
+            base_lluvia["ubigeo"] = (
+                base_lluvia["ubigeo"].str.zfill(6)
+            )
+
+            if (
+                len(base_lluvia) != 84
+                or base_lluvia["ubigeo"].duplicated().any()
+            ):
+                st.error("El catálogo de 84 distritos es inválido.")
+                st.stop()
+
+            pred = df[[
+                "ubigeo", "puesto_modelo", "score_modelo_pct"
+            ]].copy()
+            pred["ubigeo"] = pred["ubigeo"].str.zfill(6)
+
+            resumen = base_lluvia[[
+                "ubigeo", "provincia", "distrito",
+                "precipitacion_total_mm", "nivel_precipitacion"
+            ]].merge(
+                pred, on="ubigeo", how="left",
+                validate="one_to_one"
+            )
+
+            def clasificar(fila):
+                score = fila["score_modelo_pct"]
+                lluvia = fila["nivel_precipitacion"]
+
+                if pd.notna(score):
+                    return "Prioridad V3-A"
+
+                if lluvia == "Alta":
+                    return "Vigilancia por lluvia alta"
+
+                if lluvia == "Normal":
+                    return "Sin score V3-A; lluvia normal"
+
+                if lluvia == "Baja":
+                    return "Sin score V3-A; lluvia baja"
+
+                return "Información insuficiente"
+
+            resumen["atencion"] = resumen.apply(
+                clasificar, axis=1
+            )
+
+            resumen["_con_score"] = (
+                resumen["score_modelo_pct"].notna()
+            )
+            resumen["_lluvia_alta"] = (
+                resumen["nivel_precipitacion"] == "Alta"
+            )
+
+            resumen = resumen.sort_values(
+                [
+                    "_con_score", "score_modelo_pct",
+                    "_lluvia_alta", "provincia", "distrito"
+                ],
+                ascending=[False, False, False, True, True],
+                na_position="last"
+            )
+
+            st.subheader("Priorización territorial — 84 distritos")
+
+            st.caption(
+                f"Precipitación observada en {meses[mes]} {anio}, "
+                "antes del mes pronosticado. "
+                "La clasificación Alta/Normal/Baja es relativa "
+                "al historial del distrito; no constituye una "
+                "predicción meteorológica ni una alerta oficial. "
+                "Los distritos sin score no fueron evaluados por V3-A."
+            )
+
+            columnas = {
+                "puesto_modelo": "Puesto V3-A",
+                "provincia": "Provincia",
+                "distrito": "Distrito",
+                "score_modelo_pct": "Score V3-A",
+                "precipitacion_total_mm": "Lluvia (mm)",
+                "nivel_precipitacion": "Nivel de lluvia",
+                "atencion": "Atención sugerida"
+            }
+
+            st.dataframe(
+                resumen[list(columnas)].rename(columns=columnas),
+                hide_index=True,
+                use_container_width=True,
+                height=650
+            )
+
+            st.info(
+                f"{len(pred)} distritos con score V3-A; "
+                f"{84 - len(pred)} sin score. "
+                "Los 84 aparecen en la tabla."
+            )
+
+        else:
+            st.warning(
+                "Faltan los datos de precipitación del mes "
+                "de entrada para completar la tabla de 84 distritos."
+            )
+
     st.metric("Distritos pronosticados", len(df))
 
-    st.subheader("Top 20 de prioridad")
+    st.subheader("Ranking de distritos con score V3-A")
 
     st.dataframe(
         df.sort_values("puesto_modelo")[

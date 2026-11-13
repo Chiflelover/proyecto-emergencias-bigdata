@@ -15,6 +15,7 @@ def main():
 
     parser.add_argument("anio", type=int)
     parser.add_argument("mes", type=int)
+    parser.add_argument("--exploratorio", action="store_true")
 
     args = parser.parse_args()
 
@@ -26,10 +27,13 @@ def main():
     if not (1 <= mes <= 12):
         parser.error("El mes debe estar entre 1 y 12")
 
-    if not ((2004, 1) <= (anio, mes) <= (2025, 12)):
+    if not ((2004, 1) <= (anio, mes) <= (2026, 6)):
+        parser.error("Período fuera del rango disponible.")
+
+    if anio == 2026 and not args.exploratorio:
         parser.error(
-            "Solo se admiten meses de entrada "
-            "entre enero de 2004 y diciembre de 2025."
+            "Para utilizar SINPAD provisional 2026 "
+            "debes indicar --exploratorio."
         )
 
     spark = (
@@ -46,8 +50,12 @@ def main():
 
     try:
         ruta_panel = (
-            "hdfs://localhost:9000/proyecto_emergencias/"
-            "processed/panel_distrito_mes_2003_2025"
+            "hdfs://localhost:9000/proyecto_emergencias/processed/"
+            + (
+                "panel_distrito_mes_2003_2026_provisional_v2"
+                if anio == 2026
+                else "panel_distrito_mes_2003_2025"
+            )
         )
 
         print("===== MOTOR PREDICTIVO V3-A =====")
@@ -57,7 +65,17 @@ def main():
 
         # Ejecutar nuestro pipeline validado
         ranking = predecir_mes_v3(
-            panel, anio, mes
+            panel, anio, mes,
+            modo_exploratorio=args.exploratorio
+        )
+
+        ranking = ranking.withColumn(
+            "estado_prediccion",
+            F.lit(
+                "EXPLORATORIA_SINPAD_NO_VALIDADO"
+                if anio == 2026
+                else "HISTORICA"
+            )
         )
 
         # Incorporar mes de entrada
@@ -99,8 +117,12 @@ def main():
         print("Distritos:", len(datos))
         print("Archivo:", salida)
 
-        assert len(datos) == 84
-        assert datos["ubigeo"].nunique() == 84
+        assert (
+            0 < len(datos) <= 84
+            if args.exploratorio
+            else len(datos) == 84
+        )
+        assert datos["ubigeo"].nunique() == len(datos)
 
         print("\nPREDICCIÓN GENERADA CORRECTAMENTE")
 
